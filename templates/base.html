@@ -60,9 +60,15 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="/profile">Profile</a>
                 </li>
-                {% if user.is_superuser %}
+                {% if user.is_superuser or user.cafe_manager %}
+                <li class="nav-item">
+                  <a class="nav-link active" href="/dashboard">Dashboard</a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link active" href="/manage_menu">Add Item</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active" href="/manage_tables">Manage Tables</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link active" href="/all_orders">Orders</a>

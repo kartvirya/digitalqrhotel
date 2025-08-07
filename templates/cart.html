@@ -21,6 +21,19 @@
     {% csrf_token %}
     <input type='hidden' name="items_json" id="itemsjson">
     <input type="hidden" id="tableValueInput" name='table_value' >
+    <input type="hidden" id="tableUniqueIdInput" name='table_unique_id' >
+    
+    <!-- Table Information Display -->
+    <div class="alert alert-info" id="tableInfo" style="display: none;">
+      <h6>Ordering for Table: <span id="tableDisplay"></span></h6>
+    </div>
+    
+    <!-- Special Instructions -->
+    <div class="form-group mb-3">
+      <label for="special_instructions">Special Instructions (Optional):</label>
+      <textarea class="form-control" id="special_instructions" name="special_instructions" rows="3" placeholder="Any special requests or instructions for your order..."></textarea>
+    </div>
+    
   <div class='my-4'>
 
     <ul class="list-group " id='items'>
@@ -108,6 +121,13 @@ function clearLocalStorage() {
 
   var tableValue = localStorage.getItem('tableValue');      
   document.getElementById('tableValueInput').value = tableValue;
+  
+  // Handle table information display
+  if (tableValue && tableValue !== 'null') {
+    document.getElementById('tableDisplay').textContent = tableValue;
+    document.getElementById('tableInfo').style.display = 'block';
+    document.getElementById('tableUniqueIdInput').value = localStorage.getItem('tableUniqueId') || '';
+  }
 
   $('form').submit(function () {
   document.location= '/';

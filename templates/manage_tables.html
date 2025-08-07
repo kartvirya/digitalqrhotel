@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Tables{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Manage Tables & QR Codes</h2>
+    
+    <!-- Add New Table Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Add New Table</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="table_number">Table Number</label>
+                            <input type="text" class="form-control" id="table_number" name="table_number" required>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="table_name">Table Name (Optional)</label>
+                            <input type="text" class="form-control" id="table_name" name="table_name">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="capacity">Capacity</label>
+                            <input type="number" class="form-control" id="capacity" name="capacity" value="4" min="1" max="20">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-block">Add Table</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Tables -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Existing Tables</h5>
+        </div>
+        <div class="card-body">
+            {% if tables %}
+            <div class="row">
+                {% for table in tables %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Table {{ table.table_number }}</h6>
+                            {% if table.table_name %}
+                            <p class="card-text"><small class="text-muted">{{ table.table_name }}</small></p>
+                            {% endif %}
+                            <p class="card-text">Capacity: {{ table.capacity }} people</p>
+                            <p class="card-text">Status: 
+                                {% if table.is_active %}
+                                <span class="badge badge-success">Active</span>
+                                {% else %}
+                                <span class="badge badge-danger">Inactive</span>
+                                {% endif %}
+                            </p>
+                            
+                            {% if table.qr_code %}
+                            <div class="text-center mb-2">
+                                <img src="{{ table.qr_code.url }}" alt="QR Code" style="max-width: 150px; height: auto;">
+                            </div>
+                            {% endif %}
+                            
+                            <div class="btn-group-vertical w-100">
+                                <a href="{% url 'table_orders' table.table_number %}" class="btn btn-info btn-sm mb-1">View Orders</a>
+                                <a href="{% url 'regenerate_qr' table.id %}" class="btn btn-warning btn-sm mb-1">Regenerate QR</a>
+                                <a href="{% url 'delete_table' table.id %}" class="btn btn-danger btn-sm">Delete Table</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-center text-muted">No tables created yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

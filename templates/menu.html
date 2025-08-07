@@ -12,6 +12,17 @@
     </div>
 {% endfor %}
 
+{% if table_info %}
+<div class="alert alert-info" role="alert">
+    <h5>Welcome to Table {{ table_info.table_number }}</h5>
+    {% if table_info.table_name %}
+    <p class="mb-0"><strong>Table Name:</strong> {{ table_info.table_name }}</p>
+    {% endif %}
+    <p class="mb-0"><strong>Capacity:</strong> {{ table_info.capacity }} people</p>
+    <p class="mb-0">Scan this QR code to order directly from your table!</p>
+</div>
+{% endif %}
+
 {% for category, menu_items in items_by_category.items %}
   <h3 style="margin:40px 25px 5px">{{category}}:</h3>
 <div class="row justify-content-center">
@@ -109,6 +120,11 @@
         var params = new URLSearchParams(new URL(url).search);
         var tableValue = params.get('table');
         localStorage.setItem('tableValue', tableValue);
+        
+        // Store table unique ID if available
+        {% if table_info %}
+        localStorage.setItem('tableUniqueId', '{{ table_info.qr_unique_id }}');
+        {% endif %}
 
 </script>
 
