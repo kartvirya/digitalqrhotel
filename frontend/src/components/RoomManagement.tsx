@@ -16,7 +16,6 @@ import {
   Select,
   MenuItem as MuiMenuItem,
   Chip,
-  Grid,
   IconButton,
   Tooltip,
   Alert,
@@ -79,7 +78,7 @@ const RoomManagement: React.FC = () => {
     try {
       const roomData = {
         ...newRoom,
-        price_per_night: parseFloat(newRoom.price_per_night) || 0,
+        price_per_night: newRoom.price_per_night,
         floor: newRoom.floor
       };
       
@@ -99,7 +98,7 @@ const RoomManagement: React.FC = () => {
     try {
       const roomData = {
         ...newRoom,
-        price_per_night: parseFloat(newRoom.price_per_night) || 0,
+        price_per_night: newRoom.price_per_night,
         floor: newRoom.floor
       };
       
@@ -212,9 +211,9 @@ const RoomManagement: React.FC = () => {
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
         {rooms.map((room) => (
-          <Grid item xs={12} sm={6} md={4} key={room.id}>
+          <Box key={room.id}>
             <Card 
               sx={{
                 border: room.has_active_order ? '2px solid #f44336' : '1px solid #e0e0e0',
@@ -313,9 +312,9 @@ const RoomManagement: React.FC = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {/* Add/Edit Room Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
@@ -323,8 +322,8 @@ const RoomManagement: React.FC = () => {
           {editingRoom ? 'Edit Room' : 'Add New Room'}
         </DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mt: 1 }}>
+            <Box>
               <TextField
                 fullWidth
                 label="Room Number"
@@ -332,8 +331,8 @@ const RoomManagement: React.FC = () => {
                 onChange={(e) => setNewRoom({ ...newRoom, room_number: e.target.value })}
                 margin="normal"
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label="Room Name"
@@ -341,8 +340,8 @@ const RoomManagement: React.FC = () => {
                 onChange={(e) => setNewRoom({ ...newRoom, room_name: e.target.value })}
                 margin="normal"
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Box>
+            <Box>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Room Type</InputLabel>
                 <Select
@@ -357,8 +356,8 @@ const RoomManagement: React.FC = () => {
                   <MuiMenuItem value="presidential">Presidential Suite</MuiMenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Box>
+            <Box>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Floor</InputLabel>
                 <Select
@@ -372,8 +371,8 @@ const RoomManagement: React.FC = () => {
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label="Capacity"
@@ -382,8 +381,8 @@ const RoomManagement: React.FC = () => {
                 onChange={(e) => setNewRoom({ ...newRoom, capacity: parseInt(e.target.value) || 1 })}
                 margin="normal"
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Box>
+            <Box>
               <TextField
                 fullWidth
                 label="Price per Night"
@@ -392,8 +391,8 @@ const RoomManagement: React.FC = () => {
                 onChange={(e) => setNewRoom({ ...newRoom, price_per_night: e.target.value })}
                 margin="normal"
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+            </Box>
+            <Box>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Room Status</InputLabel>
                 <Select
@@ -407,8 +406,8 @@ const RoomManagement: React.FC = () => {
                   <MuiMenuItem value="cleaning">Being Cleaned</MuiMenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box sx={{ gridColumn: '1 / -1' }}>
               <TextField
                 fullWidth
                 label="Description"
@@ -418,8 +417,8 @@ const RoomManagement: React.FC = () => {
                 onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })}
                 margin="normal"
               />
-            </Grid>
-            <Grid item xs={12}>
+            </Box>
+            <Box sx={{ gridColumn: '1 / -1' }}>
               <TextField
                 fullWidth
                 label="Amenities (comma separated)"
@@ -428,8 +427,8 @@ const RoomManagement: React.FC = () => {
                 margin="normal"
                 placeholder="WiFi, TV, AC, Mini Bar"
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>

@@ -125,14 +125,23 @@ class TableViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def update_position(self, request, pk=None):
         table = self.get_object()
-        visual_x = request.data.get('visual_x')
-        visual_y = request.data.get('visual_y')
-        
+        # Accept both {visual_x, visual_y} and shorthand {x, y}
+        visual_x = request.data.get('visual_x', request.data.get('x'))
+        visual_y = request.data.get('visual_y', request.data.get('y'))
+
         if visual_x is not None and visual_y is not None:
-            table.visual_x = visual_x
-            table.visual_y = visual_y
+            try:
+                # Coerce to integers (round if decimal provided)
+                x_val = int(round(float(visual_x)))
+                y_val = int(round(float(visual_y)))
+            except (ValueError, TypeError):
+                return Response({'error': 'visual_x and visual_y must be numbers'}, status=status.HTTP_400_BAD_REQUEST)
+
+            table.visual_x = x_val
+            table.visual_y = y_val
             table.save()
-            return Response({'message': 'Position updated successfully'})
+            serializer = self.get_serializer(table)
+            return Response(serializer.data)
         return Response({'error': 'visual_x and visual_y are required'}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'])
@@ -267,15 +276,101 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    def get_permissions(self):
+        if self.action in ['create', 'retrieve', 'by_table_unique_id', 'by_room_unique_id', 'clear_table', 'update_status']:
+            return [permissions.AllowAny()]  # Allow anonymous order creation, viewing, table/room queries, table clearing, and status updates
+        return [permissions.IsAuthenticated()]
+    
+    def create(self, request, *args, **kwargs):
+        # Allow anonymous order creation using table/room QR
+        data = request.data
+        try:
+            items = data.get('items', [])
+            table_unique_id = data.get('table_unique_id')
+            room_unique_id = data.get('room_unique_id')
+            special_instructions = data.get('special_instructions', '')
+            total_amount = data.get('total_amount', 0)
+
+            # Build items_json as { item_id: [quantity, name, price] }
+            items_map = {}
+            for item in items:
+                item_id = str(item.get('menu_item'))
+                quantity = int(item.get('quantity', 1))
+                price = float(item.get('price', 0))
+                # Fetch name for consistency (optional; fallback to id)
+                try:
+                    mi = menu_item.objects.get(id=item_id)
+                    name = mi.name
+                except menu_item.DoesNotExist:
+                    name = f"Item {item_id}"
+                items_map[item_id] = [quantity, name, price]
+
+            # Derive table/room display
+            table_display = ''
+            order_type_value = 'table'
+            table_number_for_bill = None
+
+            if table_unique_id:
+                try:
+                    tbl = Table.objects.get(qr_unique_id=table_unique_id)
+                    table_display = tbl.table_number
+                    table_number_for_bill = tbl.table_number
+                except Table.DoesNotExist:
+                    table_display = 'Unknown'
+            elif room_unique_id:
+                try:
+                    rm = Room.objects.get(qr_unique_id=room_unique_id)
+                    table_display = f"Room {rm.room_number}"
+                    order_type_value = 'room'
+                except Room.DoesNotExist:
+                    table_display = 'Room'
+
+            # Create order
+            new_order = order.objects.create(
+                items_json=json.dumps(items_map),
+                name=data.get('name', 'Unknown'),
+                phone=data.get('phone', '0000000000'),
+                table=table_display,
+                price=total_amount or 0,
+                bill_clear=False,
+                estimated_time=20,
+                special_instructions=special_instructions,
+                status='pending',
+                table_unique_id=table_unique_id,
+                room_unique_id=room_unique_id,
+                order_type=order_type_value,
+            )
+
+            # Create bill entry
+            try:
+                from django.utils import timezone
+                bill_items = {}
+                # For bill, use { item_name: [qty, total] }
+                for item_id, (qty, name, price) in items_map.items():
+                    bill_items[name] = [qty, int(round(qty * price))]
+
+                bill.objects.create(
+                    order_items=json.dumps(bill_items),
+                    name=new_order.name or 'Unknown',
+                    bill_total=int(round(float(new_order.price))),
+                    phone=new_order.phone or '0000000000',
+                    bill_time=timezone.now(),
+                    table_number=table_number_for_bill,
+                )
+            except Exception:
+                # Do not fail order creation if bill creation fails
+                pass
+
+            serializer = self.get_serializer(new_order)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as ex:
+            return Response({'error': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
     def get_serializer_class(self):
         if self.action == 'create':
             return OrderCreateSerializer
         return OrderSerializer
-    
-    def get_permissions(self):
-        if self.action == 'create':
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
     
     def get_queryset(self):
         user = self.request.user
@@ -283,14 +378,18 @@ class OrderViewSet(viewsets.ModelViewSet):
             return order.objects.all().order_by('-created_at')
         elif user.is_authenticated:
             return order.objects.filter(phone=user.phone).order_by('-created_at')
-        return order.objects.none()
+        # Allow anonymous users to retrieve orders (for order tracking)
+        return order.objects.all().order_by('-created_at')
     
     @action(detail=True, methods=['post'])
     def update_status(self, request, pk=None):
         order_obj = self.get_object()
         new_status = request.data.get('status')
         
-        if new_status in dict(order.ORDER_STATUS_CHOICES):
+        # Valid order statuses
+        valid_statuses = ['pending', 'confirmed', 'preparing', 'ready', 'served', 'delivered', 'cancelled']
+        
+        if new_status in valid_statuses:
             order_obj.status = new_status
             order_obj.save()
             return Response({'success': True, 'status': new_status})
@@ -304,6 +403,24 @@ class OrderViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(orders, many=True)
             return Response(serializer.data)
         return Response({'error': 'Table parameter required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def by_table_unique_id(self, request):
+        table_unique_id = request.query_params.get('table_unique_id')
+        if table_unique_id:
+            orders = order.objects.filter(table_unique_id=table_unique_id).order_by('-created_at')
+            serializer = self.get_serializer(orders, many=True)
+            return Response(serializer.data)
+        return Response({'error': 'table_unique_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def by_room_unique_id(self, request):
+        room_unique_id = request.query_params.get('room_unique_id')
+        if room_unique_id:
+            orders = order.objects.filter(room_unique_id=room_unique_id).order_by('-created_at')
+            serializer = self.get_serializer(orders, many=True)
+            return Response(serializer.data)
+        return Response({'error': 'room_unique_id parameter required'}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'])
     def my_orders(self, request):
@@ -319,6 +436,35 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user_orders, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['post'])
+    def clear_table(self, request):
+        """Clear table by marking all orders as billed"""
+        table_unique_id = request.data.get('table_unique_id')
+        room_unique_id = request.data.get('room_unique_id')
+        
+        if not table_unique_id and not room_unique_id:
+            return Response({'error': 'table_unique_id or room_unique_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Mark all orders for this table/room as billed
+            if table_unique_id:
+                orders_to_clear = order.objects.filter(table_unique_id=table_unique_id, bill_clear=False)
+            else:
+                orders_to_clear = order.objects.filter(room_unique_id=room_unique_id, bill_clear=False)
+            
+            # Update all orders to mark them as billed
+            orders_to_clear.update(bill_clear=True)
+            
+            cleared_count = orders_to_clear.count()
+            
+            return Response({
+                'message': f'Table cleared successfully. {cleared_count} orders marked as billed.',
+                'cleared_orders': cleared_count
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class RatingViewSet(viewsets.ModelViewSet):
     queryset = rating.objects.all().order_by('-r_date')
@@ -327,21 +473,69 @@ class RatingViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]  # Allow anonymous reviews
     
     def perform_create(self, serializer):
         user = self.request.user
-        # Set the name to user's full name or phone if no name
-        user_name = f"{user.first_name} {user.last_name}".strip()
-        if not user_name:
-            user_name = user.phone
+        if user.is_authenticated:
+            # Set the name to user's full name or phone if no name
+            user_name = f"{user.first_name} {user.last_name}".strip()
+            if not user_name:
+                user_name = user.phone
+        else:
+            # For anonymous users, use a default name
+            user_name = "Anonymous Customer"
         serializer.save(name=user_name)
 
 
 class BillViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = bill.objects.all().order_by('-bill_time')
     serializer_class = BillSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]  # Allow anonymous access to view bills
+        return [permissions.IsAuthenticated()]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by table_unique_id if provided
+        table_unique_id = self.request.query_params.get('table_unique_id')
+        if table_unique_id:
+            # Get the table number for this unique ID
+            try:
+                table = Table.objects.get(qr_unique_id=table_unique_id)
+                # Filter bills by table number
+                queryset = queryset.filter(table_number=table.table_number)
+            except Table.DoesNotExist:
+                # Fallback to phone number filtering
+                table_orders = order.objects.filter(table_unique_id=table_unique_id)
+                phone_numbers = table_orders.values_list('phone', flat=True).distinct()
+                queryset = queryset.filter(phone__in=phone_numbers)
+        
+        # Filter by room_unique_id if provided
+        room_unique_id = self.request.query_params.get('room_unique_id')
+        if room_unique_id:
+            # Get the room number for this unique ID
+            try:
+                room = Room.objects.get(qr_unique_id=room_unique_id)
+                # For rooms, we'll filter by phone numbers since bills don't have room numbers
+                room_orders = order.objects.filter(room_unique_id=room_unique_id)
+                phone_numbers = room_orders.values_list('phone', flat=True).distinct()
+                queryset = queryset.filter(phone__in=phone_numbers)
+            except Room.DoesNotExist:
+                # Fallback to phone number filtering
+                room_orders = order.objects.filter(room_unique_id=room_unique_id)
+                phone_numbers = room_orders.values_list('phone', flat=True).distinct()
+                queryset = queryset.filter(phone__in=phone_numbers)
+        
+        # Also support direct table_number filtering
+        table_number = self.request.query_params.get('table_number')
+        if table_number:
+            queryset = queryset.filter(table_number=table_number)
+        
+        return queryset
 
 
 class AuthViewSet(viewsets.ViewSet):

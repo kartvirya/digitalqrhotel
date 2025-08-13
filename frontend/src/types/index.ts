@@ -141,7 +141,7 @@ export interface MenuItem {
   description: string;
   image?: string;
   image_url?: string;
-  price: number;
+  price: string;
   list_order: number;
   is_available: boolean;
 }
@@ -149,19 +149,19 @@ export interface MenuItem {
 // Order types
 export interface Order {
   id: number;
-  user: number;
-  items: Array<{
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
-  total_amount: number;
+  name: string;
+  phone: string;
+  table: string;
+  price: string;
   status: string;
-  table_unique_id?: string;
-  special_instructions?: string;
-  estimated_time?: number;
+  estimated_time: number;
   created_at: string;
   updated_at: string;
+  special_instructions?: string;
+  items_json: string;
+  table_unique_id?: string;
+  room_unique_id?: string;
+  order_type: 'table' | 'room';
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'cancelled';
@@ -169,9 +169,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'ser
 // Rating types
 export interface Rating {
   id: number;
-  user: number;
   user_name?: string;
-  rating: number;
   comment: string;
   created_at: string;
   updated_at: string;
@@ -180,9 +178,9 @@ export interface Rating {
 // Bill types
 export interface Bill {
   id: number;
-  order_items: Record<string, [number, number]>; // [quantity, total_price]
+  order_items: Record<string, [number, string]>; // [quantity, total_price]
   name: string;
-  bill_total: number;
+  bill_total: string;
   phone: string;
   bill_time: string;
   table_number?: string;
@@ -194,7 +192,7 @@ export interface CartItem {
   menu_item_id: number;
   quantity: number;
   name: string;
-  price: number;
+  price: string;
 }
 
 export interface Cart {
@@ -224,21 +222,21 @@ export interface OrderRequest {
   items: Array<{
     menu_item: number;
     quantity: number;
-    price: number;
+    price: string;
   }>;
   table_unique_id?: string;
   special_instructions?: string;
-  total_amount: number;
+  total_amount: string;
 }
 
 export interface DashboardStats {
-  total_revenue: number;
+  total_revenue: string;
   total_orders: number;
   total_menu_items: number;
   total_tables: number;
   total_staff: number;
   pending_orders: number;
-  average_order_value: number;
+  average_order_value: string;
   recent_orders: Order[];
   popular_items: MenuItem[];
 }

@@ -19,8 +19,19 @@ import {
   DashboardStats
 } from '../types';
 
+// Dynamic backend URL detection
+const getBackendUrl = () => {
+  // If we're in development, use the same host as the frontend
+  if (process.env.NODE_ENV === 'development') {
+    const host = window.location.hostname;
+    return `http://${host}:8002`;
+  }
+  // For production, you can set a specific backend URL
+  return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
+};
+
 // Configure axios
-axios.defaults.baseURL = 'http://localhost:8002';
+axios.defaults.baseURL = getBackendUrl();
 axios.defaults.withCredentials = true;
 
 // API service class
@@ -110,8 +121,23 @@ class ApiService {
     return response.data;
   }
 
+  async getOrdersByTableUniqueId(tableUniqueId: string): Promise<Order[]> {
+    const response: AxiosResponse<Order[]> = await axios.get(`/api/orders/by_table_unique_id/?table_unique_id=${tableUniqueId}`);
+    return response.data;
+  }
+
+  async getOrdersByRoomUniqueId(roomUniqueId: string): Promise<Order[]> {
+    const response: AxiosResponse<Order[]> = await axios.get(`/api/orders/by_room_unique_id/?room_unique_id=${roomUniqueId}`);
+    return response.data;
+  }
+
   async createOrder(orderData: OrderRequest): Promise<Order> {
     const response: AxiosResponse<Order> = await axios.post('/api/orders/', orderData);
+    return response.data;
+  }
+
+  async getOrder(orderId: number): Promise<Order> {
+    const response: AxiosResponse<Order> = await axios.get(`/api/orders/${orderId}/`);
     return response.data;
   }
 
@@ -139,6 +165,24 @@ class ApiService {
   // Bill endpoints
   async getBills(): Promise<Bill[]> {
     const response: AxiosResponse<Bill[]> = await axios.get('/api/bills/');
+    return response.data;
+  }
+
+  async getBillsByTable(tableUniqueId: string): Promise<Bill[]> {
+    const response: AxiosResponse<Bill[]> = await axios.get(`/api/bills/?table_unique_id=${tableUniqueId}`);
+    return response.data;
+  }
+
+  async getBillsByRoom(roomUniqueId: string): Promise<Bill[]> {
+    const response: AxiosResponse<Bill[]> = await axios.get(`/api/bills/?room_unique_id=${roomUniqueId}`);
+    return response.data;
+  }
+
+  async clearTable(tableUniqueId?: string, roomUniqueId?: string): Promise<any> {
+    const response = await axios.post('/api/orders/clear_table/', {
+      table_unique_id: tableUniqueId,
+      room_unique_id: roomUniqueId
+    });
     return response.data;
   }
 

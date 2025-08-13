@@ -72,8 +72,9 @@ class Table(models.Model):
             box_size=10,
             border=4,
         )
-        # URL for table-specific ordering
-        url = f"http://localhost:3002/?table={self.qr_unique_id}"
+        # URL for table-specific ordering - using network IP
+        from django.conf import settings
+        url = f"{settings.FRONTEND_URL}/?table={self.qr_unique_id}"
         qr.add_data(url)
         qr.make(fit=True)
         
@@ -140,8 +141,9 @@ class Room(models.Model):
             box_size=10,
             border=4,
         )
-        # URL for room-specific ordering
-        url = f"http://localhost:3002/?room={self.qr_unique_id}"
+        # URL for room-specific ordering - using network IP
+        from django.conf import settings
+        url = f"{settings.FRONTEND_URL}/?room={self.qr_unique_id}"
         qr.add_data(url)
         qr.make(fit=True)
         

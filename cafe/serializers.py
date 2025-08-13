@@ -126,45 +126,29 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField()
-    total_amount = serializers.SerializerMethodField()
+    items_json = serializers.CharField(read_only=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    name = serializers.CharField(read_only=True)
+    phone = serializers.CharField(read_only=True)
+    table = serializers.CharField(read_only=True)
+    table_unique_id = serializers.CharField(read_only=True)
+    room_unique_id = serializers.CharField(read_only=True)
+    order_type = serializers.CharField(read_only=True)
     
     class Meta:
         model = order
-        fields = ['id', 'user', 'items', 'total_amount', 'status', 'table_unique_id', 'special_instructions', 'estimated_time', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'phone', 'table', 'price', 'status', 'estimated_time', 'created_at', 'updated_at', 'special_instructions', 'items_json', 'table_unique_id', 'room_unique_id', 'order_type']
         read_only_fields = ['id', 'created_at', 'updated_at']
-    
-    def get_items(self, obj):
-        try:
-            items_data = json.loads(obj.items_json)
-            items = []
-            for item_id, (quantity, name, price) in items_data.items():
-                items.append({
-                    'id': item_id,
-                    'name': name,
-                    'quantity': quantity,
-                    'price': price
-                })
-            return items
-        except:
-            return []
-    
-    def get_total_amount(self, obj):
-        try:
-            return int(obj.price)
-        except:
-            return 0
 
 
 class RatingSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='name')
-    rating = serializers.IntegerField(default=5)  # Default rating
     created_at = serializers.DateField(source='r_date')
     updated_at = serializers.DateField(source='r_date')
 
     class Meta:
         model = rating
-        fields = ['id', 'user_name', 'rating', 'comment', 'created_at', 'updated_at']
+        fields = ['id', 'user_name', 'comment', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
@@ -182,7 +166,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = order
-        fields = ['items_json', 'name', 'phone', 'table', 'table_unique_id', 'price', 'special_instructions']
+        fields = ['id', 'items_json', 'name', 'phone', 'table', 'table_unique_id', 'price', 'special_instructions', 'status', 'estimated_time', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
     
     def create(self, validated_data):
         # Set default values for required fields

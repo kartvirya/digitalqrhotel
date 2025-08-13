@@ -9,10 +9,9 @@ import {
   Alert,
   CircularProgress,
   Card,
-  CardContent,
-  Rating
+  CardContent
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext'; // Not needed for anonymous reviews
 import { Rating as RatingType } from '../types';
 import { apiService } from '../services/api';
 
@@ -23,10 +22,9 @@ const Reviews: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [newReview, setNewReview] = useState({
-    rating: 0,
     comment: ''
   });
-  const { user } = useAuth();
+  // const { user } = useAuth(); // Not needed for anonymous reviews
 
   useEffect(() => {
     loadReviews();
@@ -46,11 +44,6 @@ const Reviews: React.FC = () => {
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (newReview.rating === 0) {
-      setError('Please select a rating');
-      return;
-    }
-
     if (!newReview.comment.trim()) {
       setError('Please provide a comment');
       return;
@@ -62,7 +55,7 @@ const Reviews: React.FC = () => {
     try {
       await apiService.createRating({ comment: newReview.comment });
       setSuccess('Review submitted successfully!');
-      setNewReview({ rating: 0, comment: '' });
+      setNewReview({ comment: '' });
       loadReviews();
     } catch (error: any) {
       setError(error.response?.data?.error || 'Failed to submit review');
@@ -102,48 +95,34 @@ const Reviews: React.FC = () => {
       )}
 
       {/* Submit Review Form */}
-      {user && (
-        <Paper sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Write a Review
-          </Typography>
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Write a Review
+        </Typography>
+        
+        <Box component="form" onSubmit={handleSubmitReview}>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label="Your Review"
+            value={newReview.comment}
+            onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+            margin="normal"
+            required
+            placeholder="Share your experience with our restaurant..."
+          />
           
-          <Box component="form" onSubmit={handleSubmitReview}>
-            <Box sx={{ mb: 2 }}>
-              <Typography component="legend">Rating</Typography>
-              <Rating
-                name="rating"
-                value={newReview.rating}
-                onChange={(event, newValue) => {
-                  setNewReview(prev => ({ ...prev, rating: newValue || 0 }));
-                }}
-                size="large"
-              />
-            </Box>
-            
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="Your Review"
-              value={newReview.comment}
-              onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-              margin="normal"
-              required
-              placeholder="Share your experience with our restaurant..."
-            />
-            
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={submitting}
-              sx={{ mt: 2 }}
-            >
-              {submitting ? <CircularProgress size={20} /> : 'Submit Review'}
-            </Button>
-          </Box>
-        </Paper>
-      )}
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={submitting}
+            sx={{ mt: 2 }}
+          >
+            {submitting ? <CircularProgress size={20} /> : 'Submit Review'}
+          </Button>
+        </Box>
+      </Paper>
 
       {/* Reviews List */}
       <Box>
@@ -175,11 +154,9 @@ const Reviews: React.FC = () => {
                       </Typography>
                     </Box>
                     
-                    <Rating
-                      value={review.rating}
-                      readOnly
-                      size="small"
-                    />
+                                    <Typography variant="body2" color="text.secondary">
+                  Review
+                </Typography>
                   </Box>
                   
                   <Typography variant="body1" sx={{ mt: 2 }}>

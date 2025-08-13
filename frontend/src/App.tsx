@@ -21,6 +21,9 @@ import AdminHR from './components/AdminHR';
 import OrderManagement from './components/OrderManagement';
 import MyOrders from './components/MyOrders';
 import Reviews from './components/Reviews';
+import OrderTracking from './components/OrderTracking';
+import TableOrders from './components/TableOrders';
+import BillPortal from './components/BillPortal';
 
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -67,6 +70,9 @@ const AppContent: React.FC = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/my-orders" element={<MyOrders />} />
         <Route path="/reviews" element={<Reviews />} />
+        <Route path="/order-tracking/:orderId" element={<OrderTracking />} />
+        <Route path="/table-orders" element={<TableOrders />} />
+        <Route path="/bills" element={<BillPortal />} />
         
         {/* Admin routes */}
         <Route 

@@ -305,9 +305,9 @@ const Dashboard: React.FC = () => {
                     <TableCell>#{order.id}</TableCell>
                     <TableCell>{order.table_unique_id}</TableCell>
                     <TableCell>
-                      {order.items?.length || 0} items
+                      {order.items_json ? JSON.parse(order.items_json).length || 0 : 0} items
                     </TableCell>
-                    <TableCell>₹{order.total_amount || 0}</TableCell>
+                                          <TableCell>₹{order.price || 0}</TableCell>
                     <TableCell>
                       <Chip
                         label={order.status}
@@ -619,21 +619,21 @@ const Dashboard: React.FC = () => {
                 <strong>Order Time:</strong> {new Date(selectedOrder.created_at).toLocaleString()}
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                <strong>Total Amount:</strong> ₹{selectedOrder.total_amount}
+                <strong>Total Amount:</strong> ₹{selectedOrder.price}
               </Typography>
 
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Order Items:
               </Typography>
               <List>
-                {selectedOrder.items?.map((item, index) => (
+                {selectedOrder.items_json ? Object.entries(JSON.parse(selectedOrder.items_json)).map(([id, data]: [string, any], index) => (
                   <ListItem key={index}>
                     <ListItemText
-                      primary={item.name}
-                      secondary={`Quantity: ${item.quantity} | Price: ₹${item.price}`}
+                      primary={data[1]}
+                      secondary={`Quantity: ${data[0]} | Price: ₹${data[2]}`}
                     />
                   </ListItem>
-                ))}
+                )) : null}
               </List>
 
               {selectedOrder.special_instructions && (

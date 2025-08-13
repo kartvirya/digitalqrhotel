@@ -42,7 +42,7 @@ const MenuManagement: React.FC = () => {
     name: '',
     category: '',
     description: '',
-    price: 0,
+    price: '0',
     is_available: true,
   });
 
@@ -70,7 +70,7 @@ const MenuManagement: React.FC = () => {
         name: '',
         category: '',
         description: '',
-        price: 0,
+        price: '0',
         is_available: true,
       });
       loadMenuItems();
@@ -275,9 +275,9 @@ const MenuManagement: React.FC = () => {
               value={editingItem ? editingItem.price : newItem.price}
               onChange={(e) => {
                 if (editingItem) {
-                  setEditingItem({ ...editingItem, price: parseFloat(e.target.value) });
+                  setEditingItem({ ...editingItem, price: e.target.value });
                 } else {
-                  setNewItem({ ...newItem, price: parseFloat(e.target.value) });
+                  setNewItem({ ...newItem, price: e.target.value });
                 }
               }}
               margin="normal"

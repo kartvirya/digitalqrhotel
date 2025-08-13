@@ -172,7 +172,7 @@ const OrderManagement: React.FC = () => {
                       size="small"
                     />
                     <Typography variant="h6" color="primary">
-                      ₹{order.total_amount}
+                      ₹{order.price}
                     </Typography>
                   </Box>
                 </Box>
@@ -196,16 +196,16 @@ const OrderManagement: React.FC = () => {
                     Order Items:
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {order.items.map((item, index) => (
+                    {order.items_json ? Object.entries(JSON.parse(order.items_json)).map(([id, data]: [string, any], index) => (
                       <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2">
-                          {item.name} x{item.quantity}
+                          {data[1]} x{data[0]}
                         </Typography>
                         <Typography variant="body2" color="primary">
-                          ₹{item.price * item.quantity}
+                          ₹{data[2] * data[0]}
                         </Typography>
                       </Box>
-                    ))}
+                    )) : null}
                   </Box>
                 </Box>
 

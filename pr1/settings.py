@@ -25,6 +25,24 @@ SECRET_KEY = 'django-insecure-^#ku(-=1nwd8wnfe&1eri+k)_(8g@!n*#p3&!i4=!!c)&rhl3v
 DEBUG = True
 USE_TZ = False
 
+# Dynamic IP detection for frontend URL
+import socket
+import os
+
+def get_local_ip():
+    """Get the local IP address dynamically"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        return os.environ.get('LOCAL_IP', '127.0.0.1')
+
+# Frontend URL for QR codes - dynamically detected
+FRONTEND_URL = f'http://{get_local_ip()}:3000'
+
 ALLOWED_HOSTS = [
     'e0398dde-191c-43d5-8dfc-bc9e465afc40.id.repl.co',
     'pr1.dhootkaushik.repl.co',
@@ -60,7 +78,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS settings for React frontend
+# CORS settings for React frontend - dynamic
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -68,11 +86,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3001",
     "http://localhost:3002",
     "http://127.0.0.1:3002",
+    f"http://{get_local_ip()}:3000",
+    f"http://{get_local_ip()}:3001",
+    f"http://{get_local_ip()}:3002",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF settings for API
+# CSRF settings for API - dynamic
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -80,6 +101,9 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3001",
     "http://localhost:3002",
     "http://127.0.0.1:3002",
+    f"http://{get_local_ip()}:3000",
+    f"http://{get_local_ip()}:3001",
+    f"http://{get_local_ip()}:3002",
 ]
 
 # REST Framework settings
