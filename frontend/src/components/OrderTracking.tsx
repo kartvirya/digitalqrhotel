@@ -13,7 +13,6 @@ import {
   Button,
   Stack,
   Avatar,
-  Divider,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -53,7 +52,6 @@ const OrderTracking: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const [searchParams] = useSearchParams();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const tableUniqueId = searchParams.get('table');
   const roomUniqueId = searchParams.get('room');

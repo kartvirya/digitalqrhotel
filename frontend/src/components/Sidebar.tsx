@@ -34,11 +34,8 @@ import {
   Work as HRIcon,
   Receipt as ReceiptIcon,
   Refresh as RefreshIcon,
-  Edit as EditIcon,
-  Menu as MenuIcon,
   Close as CloseIcon,
   ExpandMore as ExpandMoreIcon,
-  ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';

@@ -17,7 +17,7 @@ import {
   Restaurant as RestaurantIcon,
   Done as DoneIcon
 } from '@mui/icons-material';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { Order } from '../types';
 

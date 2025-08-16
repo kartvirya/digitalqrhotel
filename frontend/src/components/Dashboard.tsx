@@ -7,44 +7,19 @@ import {
   CardContent,
   Button,
   Chip,
-  Avatar,
-  Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
   IconButton,
-  Menu,
-  MenuItem,
 } from '@mui/material';
 import {
-  CheckCircle as CheckIcon,
   ArrowUpward as ArrowUpIcon,
   GitHub as GitHubIcon,
-  Settings as SettingsIcon,
-  IntegrationInstructions as IntegrationIcon,
-  Psychology as PsychologyIcon,
-  BugReport as BugIcon,
-  Assessment as UsageIcon,
-  Receipt as BillingIcon,
-  Description as DocsIcon,
-  ContactSupport as ContactIcon,
-  Refresh as RefreshIcon,
-  ExpandMore as ExpandMoreIcon,
-  Edit as EditIcon,
   PersonAdd as PersonAddIcon,
+  ExpandMore as ExpandMoreIcon,
+  Psychology as PsychologyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
 
   if (!user?.is_superuser && !user?.cafe_manager) {
     return (

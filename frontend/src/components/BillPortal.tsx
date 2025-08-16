@@ -57,7 +57,6 @@ const BillPortal: React.FC = () => {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams] = useSearchParams();
   
   const tableUniqueId = searchParams.get('table');
@@ -65,7 +64,7 @@ const BillPortal: React.FC = () => {
 
   useEffect(() => {
     loadBills();
-  }, []);
+  }, [tableUniqueId, roomUniqueId]);
 
   const loadBills = async () => {
     try {

@@ -11,12 +11,10 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Paper,
   AppBar,
   Toolbar,
   Badge,
   Divider,
-  Avatar,
   Fab,
   Drawer,
   List,
@@ -25,7 +23,6 @@ import {
   ListItemSecondaryAction,
   useTheme,
   useMediaQuery,
-  Stack,
   Tabs,
   Tab,
 } from '@mui/material';
@@ -55,7 +52,6 @@ const Menu: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const tableUniqueId = searchParams.get('table');
   const roomUniqueId = searchParams.get('room');

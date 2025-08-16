@@ -161,16 +161,7 @@ const RoomManagement: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available': return 'success';
-      case 'occupied': return 'error';
-      case 'maintenance': return 'warning';
-      case 'reserved': return 'info';
-      case 'cleaning': return 'default';
-      default: return 'default';
-    }
-  };
+
 
   const getStatusChipStyle = (status: string) => {
     switch (status) {

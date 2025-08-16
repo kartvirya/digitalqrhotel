@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -17,12 +17,10 @@ import {
   Alert,
   Chip,
   Avatar,
-  Divider,
   List,
   ListItem,
   ListItemText,
   ListItemAvatar,
-  IconButton,
   Paper,
   Tab,
   Tabs,
@@ -37,7 +35,6 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Add as AddIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
 import { Staff, Attendance, Leave } from '../types';
@@ -85,7 +82,7 @@ const StaffPortal: React.FC = () => {
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const user = await apiService.getCurrentUser();
       if (user && user.staff_profile) {
@@ -96,7 +93,7 @@ const StaffPortal: React.FC = () => {
     } catch (error) {
       console.log('Not logged in as staff');
     }
-  };
+  }, []);
 
   const loadStaffData = async () => {
     if (!staff) return;

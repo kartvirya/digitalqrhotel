@@ -11,32 +11,18 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Alert,
   Tabs,
   Tab,
   IconButton,
   Avatar,
+  TextField,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Person as PersonIcon,
-  Schedule as ScheduleIcon,
-  Event as EventIcon,
-  Work as WorkIcon,
-  Visibility as ViewIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 import { apiService } from '../services/api';
 import { Staff, Attendance, Leave } from '../types';
@@ -71,8 +57,7 @@ const AdminHR: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [tabValue, setTabValue] = useState(0);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [leaveDialog, setLeaveDialog] = useState(false);
-  const [selectedLeave, setSelectedLeave] = useState<Leave | null>(null);
+
 
   useEffect(() => {
     loadData();

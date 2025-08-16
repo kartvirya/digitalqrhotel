@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import apiService from '../services/api';
 import { Table, Floor, Room } from '../types';
 
 const TableManagement: React.FC = () => {
-  const { user } = useAuth();
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -101,7 +100,7 @@ const TableManagement: React.FC = () => {
       }));
       setVisualTables(initialVisualTables);
     }
-  }, [tables, selectedFloor]);
+  }, [tables, selectedFloor, visualTables.length]);
 
   const loadTables = useCallback(async () => {
     try {

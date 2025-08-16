@@ -17,7 +17,6 @@ import {
   useMediaQuery,
   Stack,
   Avatar,
-  Badge,
 } from '@mui/material';
 
 import { 
@@ -41,10 +40,8 @@ const Cart: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   useEffect(() => {
     // Load cart from localStorage and normalize structure
