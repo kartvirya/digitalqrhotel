@@ -44,8 +44,7 @@ router.register(r'dashboard', DashboardViewSet, basename='dashboard')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('generate_bill', include('cafe.urls')),
-    path('view_bills', include('cafe.urls')),
+    path('', include('cafe.urls')),
 ]
 
 # Serve media files in development

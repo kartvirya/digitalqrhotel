@@ -2,6 +2,12 @@
 
 A modern, full-stack food ordering system with QR code-based table management, real-time order tracking, and comprehensive billing system.
 
+## 🏗️ Architecture
+
+- **Backend**: Django REST API with SQLite database
+- **Frontend**: React with TypeScript and Material-UI
+- **Database**: SQLite (production-ready with PostgreSQL support)
+
 ## ✨ Features
 
 ### 🍕 Customer Features
@@ -39,12 +45,12 @@ A modern, full-stack food ordering system with QR code-based table management, r
 1. **Clone the repository**
 ```bash
 git clone <repository-url>
-cd Order-food-using-QR_code
+cd digitalqr
 ```
 
 2. **Install Python dependencies**
 ```bash
-pip install -r requirements.txt
+pip install django djangorestframework django-cors-headers pillow qrcode
 ```
 
 3. **Install Node.js dependencies**
@@ -66,240 +72,123 @@ python manage.py createsuperuser
 
 ## 🌐 Running the Application
 
-### Method 1: Dynamic IP Detection (Recommended)
+### Method 1: Quick Start Script
 ```bash
-./start_dynamic.sh
+./start.sh
 ```
 
 This will:
-- **Automatically detect your current IP address**
-- Start both backend and frontend servers
-- Bind to all network interfaces (accessible from other devices)
-- Display your detected IP address
-- Show access URLs
-- **Works on any WiFi network without configuration changes**
-
-### Method 2: Quick Start Script (Legacy)
-```bash
-./start_servers.sh
-```
-
-This will:
-- Start both backend and frontend servers
-- Bind to all network interfaces (accessible from other devices)
-- Display your local IP address
-- Show access URLs
+- Start Django backend on port 8000
+- Start React frontend on port 3000
+- Display access URLs
 
 ### Method 2: Manual Start
 
 **Backend (Django)**
 ```bash
-python manage.py runserver 0.0.0.0:8002
+python manage.py runserver 8000
 ```
 
 **Frontend (React)**
 ```bash
 cd frontend
-HOST=0.0.0.0 npm start
+npm start
+```
+
+## 📁 Project Structure
+
+```
+digitalqr/
+├── cafe/                 # Django app (models, views, API)
+├── pr1/                  # Django project settings
+├── frontend/             # React frontend
+│   ├── src/
+│   │   ├── components/   # React components
+│   │   ├── services/     # API services
+│   │   ├── context/      # React context
+│   │   └── types/        # TypeScript types
+│   └── public/           # Static assets
+├── media/                # Uploaded files (QR codes, images)
+├── db.sqlite3           # SQLite database
+├── manage.py            # Django management script
+└── start.sh             # Startup script
+```
+
+## 🔧 API Endpoints
+
+The Django backend provides REST API endpoints for:
+- Authentication (`/api/auth/`)
+- Menu management (`/api/menu/`)
+- Table management (`/api/tables/`)
+- Order management (`/api/orders/`)
+- Staff management (`/api/staff/`)
+- Billing (`/api/bills/`)
+- Dashboard analytics (`/api/dashboard/`)
+
+## 🎯 Key Components
+
+### Backend (Django)
+- **Models**: User, MenuItem, Table, Order, Bill, Staff, etc.
+- **API Views**: RESTful endpoints for all operations
+- **Authentication**: Custom user model with phone-based auth
+- **File Management**: QR code generation and image uploads
+
+### Frontend (React)
+- **Components**: Modular React components for each feature
+- **State Management**: React Context for authentication
+- **UI Framework**: Material-UI for consistent design
+- **Routing**: React Router for navigation
+- **API Integration**: Axios for backend communication
+
+## 🛠️ Development
+
+### Adding New Features
+1. Create Django models in `cafe/models.py`
+2. Add API views in `cafe/api_views.py`
+3. Create React components in `frontend/src/components/`
+4. Update TypeScript types in `frontend/src/types/`
+
+### Database Changes
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### Frontend Development
+```bash
+cd frontend
+npm start
 ```
 
 ## 📱 Access URLs
 
-Once running, you can access the application from:
-
-### Local Access
 - **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8002
-- **Admin Panel**: http://localhost:8002/admin
+- **Backend API**: http://localhost:8000/api/
+- **Django Admin**: http://localhost:8000/admin/
 
-### Network Access (Other Devices)
-- **Frontend**: http://YOUR_IP:3000
-- **Backend API**: http://YOUR_IP:8002
-- **Admin Panel**: http://YOUR_IP:8002/admin
+## 🔒 Security Features
 
-**🔄 Dynamic IP Detection**: The app automatically detects your current IP address and works on any WiFi network without manual configuration.
+- CSRF protection
+- CORS configuration for frontend
+- Authentication middleware
+- Permission-based access control
+- Secure file uploads
 
-## 🔗 QR Code URLs
+## 📊 Database
 
-QR codes are automatically generated for each table/room with URLs like:
-- **Table**: `http://YOUR_IP:3000/?table=TABLE_UNIQUE_ID`
-- **Room**: `http://YOUR_IP:3000/?room=ROOM_UNIQUE_ID`
-
-**🔄 Dynamic QR Codes**: QR codes automatically use your current IP address and work on any WiFi network.
-
-## 🛠️ API Endpoints
-
-### Public Endpoints (No Authentication Required)
-- `GET /api/menu/` - Get menu items
-- `GET /api/tables/` - Get tables with status
-- `GET /api/rooms/` - Get hotel rooms
-- `POST /api/orders/` - Create orders
-- `GET /api/bills/` - View bills
-- `POST /api/orders/clear_table/` - Clear table
-- `GET /api/orders/{id}/` - Get order details
-
-### Admin Endpoints (Authentication Required)
-- `GET /api/dashboard/stats/` - Dashboard statistics
-- `POST /api/menu/` - Create menu items
-- `PUT /api/menu/{id}/` - Update menu items
-- `DELETE /api/menu/{id}/` - Delete menu items
-- `GET /api/staff/` - Staff management
-- `GET /api/attendance/` - Attendance tracking
-
-## 📊 Database Models
-
-### Core Models
-- **User**: Customer and staff accounts
-- **Table**: Restaurant tables with QR codes
-- **Room**: Hotel rooms with QR codes
-- **Floor**: Building floors
-- **MenuItem**: Food items with categories
-- **Order**: Customer orders with status tracking
-- **Bill**: Generated bills for orders
-- **Staff**: Employee management
-- **Attendance**: Staff attendance tracking
-- **Leave**: Leave management system
-
-## 🎨 Frontend Features
-
-### Technologies Used
-- **React 18** with TypeScript
-- **Material-UI** for modern UI components
-- **React Router** for navigation
-- **Axios** for API communication
-- **Local Storage** for cart persistence
-
-### Key Components
-- **Menu**: Display menu items with cart functionality
-- **Cart**: Order review and checkout
-- **OrderTracking**: Real-time order status
-- **BillPortal**: View and print bills
-- **TableManagement**: Visual table arrangement
-- **StaffPortal**: Staff self-service portal
-- **AdminHR**: HR management interface
-
-## 🔧 Configuration
-
-### Dynamic IP Detection
-The application automatically detects your current IP address and works on any WiFi network:
-
-- **Backend**: Automatically uses current IP for CORS and QR codes
-- **Frontend**: Dynamically connects to backend using same host
-- **QR Codes**: Generated with current IP address
-- **No Manual Configuration**: Works on any network without changes
-
-### Backend Settings (`pr1/settings.py`)
-- **ALLOWED_HOSTS**: Configured for network access
-- **CORS**: Cross-origin requests enabled with dynamic IP
-- **Media Files**: QR codes and images served
-- **Database**: SQLite (can be changed to PostgreSQL/MySQL)
-- **Dynamic IP**: Automatically detected and used
-
-### Frontend Settings (`frontend/src/services/api.ts`)
-- **API Base URL**: Dynamically detected from current host
-- **CORS**: Enabled for cross-origin requests
-- **Network Agnostic**: Works on any WiFi network
-
-## 🧪 Testing
-
-### Backend Testing
-```bash
-python manage.py test
-```
-
-### Frontend Testing
-```bash
-cd frontend
-npm test
-```
-
-### Manual Testing
-1. **QR Code Testing**: Scan table/room QR codes
-2. **Order Flow**: Add items → Cart → Checkout → Track
-3. **Admin Functions**: Manage tables, menu, staff
-4. **Billing**: View and print bills
-5. **Multi-device**: Test on mobile, tablet, desktop
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-**1. Port Already in Use**
-```bash
-# Kill existing processes
-pkill -f "python manage.py runserver"
-pkill -f "npm start"
-```
-
-**2. CORS Errors**
-- Ensure backend is running on `0.0.0.0:8002`
-- Check CORS settings in `pr1/settings.py`
-
-**3. Network Access Issues**
-- Verify firewall settings
-- Check if devices are on same network
-- Use `ifconfig` to get correct IP address
-
-**4. QR Code Issues**
-- Ensure QR codes are generated for tables/rooms
-- Check media file serving in Django
-
-### Debug Commands
-```bash
-# Check server status
-curl http://localhost:8002/api/menu/
-curl http://localhost:3000
-
-# Check network access
-curl http://YOUR_IP:8002/api/menu/
-curl http://YOUR_IP:3000
-
-# View logs
-tail -f /var/log/django.log
-```
-
-## 📈 Performance
-
-### Optimization Tips
-- **Images**: Compress menu item images
-- **QR Codes**: Generate on-demand, not all at once
-- **Database**: Use PostgreSQL for production
-- **Caching**: Implement Redis for session storage
-- **CDN**: Use CDN for static files in production
-
-## 🔒 Security
-
-### Production Checklist
-- [ ] Change `DEBUG = False`
-- [ ] Use environment variables for secrets
-- [ ] Configure HTTPS
-- [ ] Set up proper CORS origins
-- [ ] Use production database (PostgreSQL/MySQL)
-- [ ] Configure proper logging
-- [ ] Set up backup system
-
-## 📝 License
-
-This project is licensed under the MIT License.
+The system uses SQLite by default, which is perfect for development and small to medium deployments. For production, you can easily switch to PostgreSQL by updating the database configuration in `pr1/settings.py`.
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
+4. Test thoroughly
 5. Submit a pull request
 
-## 📞 Support
+## 📄 License
 
-For issues and questions:
-- Create an issue on GitHub
-- Check the troubleshooting section
-- Review the API documentation
-
----
-
-**🎉 Enjoy your Digital QR Food Ordering System!**
+This project is licensed under the MIT License.
 
 
 

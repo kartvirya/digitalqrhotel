@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import path, include
 from cafe import views
 from cafe.api_views import (
@@ -23,11 +22,10 @@ urlpatterns = [
     # API endpoints
     path('', include(router.urls)),
     
-    # Legacy Django views (for admin panel)
-    path('admin/', admin.site.urls),
-    path('delete_dish/<int:item_id>/', views.delete_dish, name='delete_dish'),
-    path('generate_bill', views.generate_bill, name='generate_bill'),
-    path('view_bills', views.view_bills, name='view_bills'),
+    # Additional API endpoints
+    path('api/order-status/<int:order_id>/', views.api_order_status, name='api_order_status'),
+    path('api/delete-dish/<int:item_id>/', views.api_delete_dish, name='api_delete_dish'),
+    path('api/generate-bill/', views.api_generate_bill, name='api_generate_bill'),
 ]
 
 if settings.DEBUG:
