@@ -14,7 +14,12 @@ sleep 3
 # Start React frontend
 echo "Starting React frontend..."
 cd frontend
-npm start &
+# Use production build for better performance
+if [ ! -d "build" ]; then
+  echo "Building React frontend for production..."
+  ./build-prod.sh
+fi
+npx serve -s build -l 3000 &
 REACT_PID=$!
 
 echo "Services started!"
