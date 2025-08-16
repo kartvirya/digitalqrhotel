@@ -18,6 +18,7 @@ export interface Floor {
   is_active: boolean;
   created_at: string;
   table_count?: number;
+  rooms?: Room[];
 }
 
 export interface Department {
@@ -109,7 +110,13 @@ export interface Table {
   visual_y?: number;
   floor: number;
   floor_name?: string;
+  room?: number;
+  room_name?: string;
   has_active_order?: boolean;
+  shape?: 'circle' | 'rectangle';
+  width?: number;
+  height?: number;
+  radius?: number;
 }
 
 export interface Room {
@@ -120,7 +127,7 @@ export interface Room {
   floor: number;
   floor_name?: string;
   capacity: number;
-  price_per_night: string;
+  price_per_night: number;
   is_active: boolean;
   room_status: string;
   qr_code?: string;
@@ -131,6 +138,7 @@ export interface Room {
   created_at: string;
   updated_at: string;
   has_active_order?: boolean;
+  tables?: Table[];
 }
 
 // Menu item types

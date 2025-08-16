@@ -13,7 +13,6 @@ import {
   Order,
   Rating,
   Bill,
-  LoginRequest,
   SignupRequest,
   OrderRequest,
   DashboardStats

@@ -26,7 +26,6 @@ const TableOrders: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const tableUniqueId = searchParams.get('table');
   const roomUniqueId = searchParams.get('room');

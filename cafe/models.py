@@ -40,6 +40,11 @@ class Floor(models.Model):
 
 
 class Table(models.Model):
+    SHAPE_CHOICES = [
+        ('rectangle', 'Rectangle'),
+        ('circle', 'Circle'),
+    ]
+    
     id = models.AutoField(primary_key=True)
     table_number = models.CharField(max_length=10, unique=True)
     table_name = models.CharField(max_length=50, blank=True, null=True)
@@ -48,11 +53,20 @@ class Table(models.Model):
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
     qr_unique_id = models.CharField(max_length=50, unique=True, default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
+    
     # Visual layout positions
     visual_x = models.IntegerField(default=0)
     visual_y = models.IntegerField(default=0)
-    # Floor relationship
+    
+    # Shape and dimensions
+    shape = models.CharField(max_length=20, choices=SHAPE_CHOICES, default='rectangle')
+    width = models.IntegerField(default=120)
+    height = models.IntegerField(default=80)
+    radius = models.IntegerField(default=60)
+    
+    # Floor and Room relationships
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE, related_name='tables', null=True, blank=True)
+    room = models.ForeignKey('Room', on_delete=models.CASCADE, related_name='tables', null=True, blank=True)
     
     def __str__(self):
         return f"Table {self.table_number} - {self.table_name or 'Table'}"

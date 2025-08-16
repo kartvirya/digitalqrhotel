@@ -126,7 +126,7 @@ const Menu: React.FC = () => {
           table_number: room.room_number,
           capacity: room.capacity,
           qr_unique_id: room.qr_unique_id,
-          is_occupied: room.is_active || false, // Use is_active as fallback
+          is_occupied: room.is_active || false,
           floor: room.floor,
           is_active: room.is_active,
           created_at: room.created_at,
@@ -139,11 +139,30 @@ const Menu: React.FC = () => {
 
   const loadExistingOrders = async (uniqueId: string, type: 'table' | 'room') => {
     try {
-      const orders = await apiService.getOrdersByTableUniqueId(uniqueId);
-      setExistingOrders(orders);
+      let orders;
+      if (type === 'table') {
+        orders = await apiService.getOrdersByTableUniqueId(uniqueId);
+      } else {
+        orders = await apiService.getOrdersByRoomUniqueId(uniqueId);
+      }
+      setExistingOrders(orders.filter((order: any) => 
+        ['pending', 'preparing', 'ready'].includes(order.status.toLowerCase())
+      ));
     } catch (error) {
       console.error('Failed to load existing orders:', error);
     }
+  };
+
+  const getCategories = () => {
+    const categories = Array.from(new Set(menuItems.map(item => item.category)));
+    return ['all', ...categories];
+  };
+
+  const getFilteredItems = () => {
+    if (selectedCategory === 'all') {
+      return menuItems;
+    }
+    return menuItems.filter(item => item.category === selectedCategory);
   };
 
   const addToCart = (item: MenuItem) => {
@@ -181,18 +200,6 @@ const Menu: React.FC = () => {
     return Object.values(cart).reduce((total, item) => total + (parseFloat(item.price) * item.quantity), 0);
   };
 
-  const getCategories = () => {
-    const categories = Array.from(new Set(menuItems.map(item => item.category)));
-    return ['all', ...categories];
-  };
-
-  const getFilteredItems = () => {
-    if (selectedCategory === 'all') {
-      return menuItems;
-    }
-    return menuItems.filter(item => item.category === selectedCategory);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending': return 'warning';
@@ -222,15 +229,15 @@ const Menu: React.FC = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-          color: 'white'
+          backgroundColor: '#0b0f14',
+          color: '#e5e7eb'
         }}
       >
         <CircularProgress size={80} sx={{ color: '#d32f2f', mb: 3 }} />
-        <Typography variant="h5" sx={{ color: '#333', fontWeight: 'bold', mb: 1 }}>
+        <Typography variant="h5" sx={{ color: '#e5e7eb', fontWeight: 'bold', mb: 1 }}>
           Loading Menu...
         </Typography>
-        <Typography variant="body1" sx={{ color: '#666', opacity: 0.8 }}>
+        <Typography variant="body1" sx={{ color: '#9ca3af', opacity: 0.8 }}>
           Preparing delicious options for you
         </Typography>
       </Box>
@@ -241,21 +248,21 @@ const Menu: React.FC = () => {
   const filteredItems = getFilteredItems();
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#0b0f14' }}>
       {/* App Bar */}
       <AppBar 
         position="sticky" 
         elevation={1}
         sx={{ 
           backgroundColor: '#d32f2f',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
         }}
       >
         <Toolbar>
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             <RestaurantIcon sx={{ mr: 2, color: 'white' }} />
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-              {tableInfo ? `${tableInfo.table_name || `Table ${tableInfo.table_number}`}` : 'Digital Menu'}
+              Digital Menu
             </Typography>
           </Box>
           
@@ -283,7 +290,7 @@ const Menu: React.FC = () => {
                 '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,0.1)' }
               }}
             >
-              View Bills
+              VIEW BILLS
             </Button>
             
             <Badge badgeContent={getTotalItems()} color="error">
@@ -307,6 +314,9 @@ const Menu: React.FC = () => {
               mb: 3,
               borderRadius: 2,
               boxShadow: 2,
+              backgroundColor: '#1f2937',
+              color: '#e5e7eb',
+              border: '1px solid #374151',
               '& .MuiAlert-icon': { fontSize: '2rem' }
             }}
           >
@@ -319,183 +329,60 @@ const Menu: React.FC = () => {
           </Alert>
         )}
 
-        {/* Table Info */}
-        {tableInfo && (
-          <Paper 
-            elevation={2}
-            sx={{ 
-              p: 3, 
-              mb: 3, 
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-              color: 'white'
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', mr: 2 }}>
-                <RestaurantIcon />
-              </Avatar>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  Welcome to {tableInfo.table_name || `Table ${tableInfo.table_number}`}
-                </Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9 }}>
-                  Capacity: {tableInfo.capacity} people • Scan this QR code to order directly from your table!
-                </Typography>
-              </Box>
-            </Box>
-          </Paper>
-        )}
-
-        {/* Existing Orders */}
-        {existingOrders.length > 0 && (
-          <Paper 
-            elevation={2}
-            sx={{ 
-              p: 3, 
-              mb: 3, 
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
-              border: '1px solid #ffcc02'
-            }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#e65100' }}>
-                📋 Your Active Orders
-              </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  if (tableUniqueId) {
-                    loadExistingOrders(tableUniqueId, 'table');
-                  } else if (roomUniqueId) {
-                    loadExistingOrders(roomUniqueId, 'room');
-                  }
-                }}
-                sx={{ color: '#e65100', borderColor: '#e65100' }}
-              >
-                Refresh
-              </Button>
-            </Box>
-            <Typography variant="body2" sx={{ mb: 2, color: '#e65100' }}>
-              You have {existingOrders.length} active order(s). You can place additional orders anytime!
+        {/* Menu Header Section */}
+        <Box sx={{ 
+          backgroundColor: '#ffffff', 
+          borderRadius: 2, 
+          p: 3, 
+          mb: 3,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2
+        }}>
+          <RestaurantIcon sx={{ fontSize: 48, color: '#6b7280' }} />
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 600, color: '#374151', mb: 1 }}>
+              Menu
             </Typography>
-            <Stack spacing={2}>
-              {existingOrders.map((order, index) => (
-                <Paper 
-                  key={order.id}
-                  sx={{ 
-                    p: 2, 
-                    borderRadius: 2,
-                    border: '1px solid #ffcc02',
-                    background: 'rgba(255,255,255,0.8)'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#e65100' }}>
-                        Order #{order.id} - {order.status.toUpperCase()}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: '#e65100', opacity: 0.8 }}>
-                        Total: ₹{parseFloat(order.price).toFixed(2)} | Items: {JSON.parse(order.items_json || '{}').length}
-                      </Typography>
-                    </Box>
-                    <Chip
-                      icon={getStatusIcon(order.status)}
-                      label={order.status.toUpperCase()}
-                      color={getStatusColor(order.status) as any}
-                      size="small"
-                    />
-                  </Box>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => {
-                      const url = roomUniqueId 
-                        ? `/order-tracking/${order.id}?room=${roomUniqueId}` 
-                        : (tableUniqueId 
-                          ? `/order-tracking/${order.id}?table=${tableUniqueId}` 
-                          : `/order-tracking/${order.id}`);
-                      window.location.href = url;
-                    }}
-                    sx={{ mt: 1, color: '#e65100', borderColor: '#e65100' }}
-                  >
-                    Track Order
-                  </Button>
-                </Paper>
-              ))}
-            </Stack>
-          </Paper>
-        )}
+            <Typography variant="body1" sx={{ color: '#6b7280' }}>
+              Browse our delicious menu and add items to your cart.
+            </Typography>
+          </Box>
+        </Box>
 
-        {/* Category Filter */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, color: '#333', mb: 3 }}>
-            🍽️ Menu
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 3, color: '#666' }}>
-            {existingOrders.length > 0 
-              ? "Feel free to add more items to your order! You can place multiple orders."
-              : "Browse our delicious menu and add items to your cart."
-            }
-          </Typography>
-          
-          <Tabs 
-            value={selectedCategory} 
-            onChange={(_, newValue) => setSelectedCategory(newValue)}
+        {/* Category Tabs */}
+        <Box sx={{ mb: 3 }}>
+          <Tabs
+            value={selectedCategory}
+            onChange={(e, newValue) => setSelectedCategory(newValue)}
             variant="scrollable"
             scrollButtons="auto"
             sx={{
-              backgroundColor: '#f5f5f5',
-              borderRadius: 2,
-              p: 1,
               '& .MuiTab-root': {
+                color: '#9ca3af',
                 textTransform: 'none',
-                fontWeight: 600,
+                fontWeight: 500,
                 minWidth: 'auto',
                 px: 3,
-                py: 1.5,
+                py: 1,
                 borderRadius: 2,
                 mx: 0.5,
-                color: '#666',
-                transition: 'all 0.2s ease',
-                position: 'relative',
-                '&:hover': {
-                  backgroundColor: 'rgba(211, 47, 47, 0.1)',
-                  color: '#d32f2f',
-                }
-              },
-              '& .Mui-selected': {
-                backgroundColor: '#d32f2f',
-                color: 'white !important',
-                fontWeight: 700,
-                boxShadow: '0 2px 8px rgba(211, 47, 47, 0.3)',
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -2,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '20px',
-                  height: '3px',
+                '&.Mui-selected': {
+                  color: '#e5e7eb',
                   backgroundColor: '#d32f2f',
-                  borderRadius: '2px',
                 },
                 '&:hover': {
-                  backgroundColor: '#b71c1c',
-                  color: 'white !important',
-                  boxShadow: '0 4px 12px rgba(211, 47, 47, 0.4)',
-                }
+                  backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                },
               },
               '& .MuiTabs-indicator': {
-                display: 'none', // Hide the default indicator since we're using background color
-              }
+                display: 'none',
+              },
             }}
           >
             {categories.map((category) => (
-              <Tab 
-                key={category} 
+              <Tab
+                key={category}
                 value={category}
                 label={category === 'all' ? 'All Items' : category}
               />
@@ -517,38 +404,51 @@ const Menu: React.FC = () => {
           {filteredItems.map((item) => (
             <Card 
               key={item.id}
-              elevation={2}
+              elevation={0}
               sx={{ 
-                borderRadius: 3,
+                borderRadius: 2,
                 overflow: 'hidden',
                 transition: 'all 0.2s ease',
-                border: '1px solid #e0e0e0',
+                border: '1px solid #374151',
+                backgroundColor: '#1f2937',
                 '&:hover': { 
-                  transform: 'translateY(-4px)',
-                  boxShadow: 4,
-                  borderColor: '#d32f2f',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
                 }
               }}
             >
-              <CardMedia
-                component="img"
-                height="200"
-                image={item.image_url}
-                alt={item.name}
-                sx={{ 
-                  objectFit: 'cover',
-                }}
-              />
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#333' }}>
-                      {item.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#666', mb: 2, lineHeight: 1.6 }}>
-                      {item.description}
-                    </Typography>
-                  </Box>
+              {/* Image Section */}
+              <Box sx={{ 
+                height: 200, 
+                backgroundColor: '#ffffff',
+                border: item.id === 1 ? '2px solid #d32f2f' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {item.image_url ? (
+                  <CardMedia
+                    component="img"
+                    height="200"
+                    image={item.image_url}
+                    alt={item.name}
+                    sx={{ objectFit: 'cover' }}
+                  />
+                ) : (
+                  <RestaurantIcon sx={{ fontSize: 48, color: '#9ca3af' }} />
+                )}
+              </Box>
+
+              {/* Content Section */}
+              <CardContent sx={{ 
+                p: 2, 
+                backgroundColor: '#1f2937',
+                color: '#e5e7eb'
+              }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: '#e5e7eb', flex: 1 }}>
+                    {item.name}
+                  </Typography>
                   <Chip 
                     label={item.category} 
                     size="small" 
@@ -556,64 +456,49 @@ const Menu: React.FC = () => {
                       backgroundColor: '#d32f2f',
                       color: 'white',
                       fontWeight: 600,
-                      ml: 1
+                      ml: 1,
+                      fontSize: '0.7rem',
+                      height: 20
                     }}
                   />
                 </Box>
                 
+                <Typography variant="body2" sx={{ color: '#9ca3af', mb: 2, lineHeight: 1.4 }}>
+                  {item.description}
+                </Typography>
+                
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#d32f2f' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#e5e7eb' }}>
                     ₹{item.price}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: item.is_available ? '#4caf50' : '#f44336' }}>
+                  <Typography variant="body2" sx={{ color: item.is_available ? '#10b981' : '#ef4444' }}>
                     {item.is_available ? 'Available' : 'Not Available'}
                   </Typography>
                 </Box>
                 
-                {/* Cart Controls */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {getCartItemQuantity(item.id) > 0 && (
-                    <IconButton
-                      size="small"
-                      onClick={() => removeFromCart(item.id)}
-                      sx={{ 
-                        backgroundColor: '#ffebee',
-                        '&:hover': { backgroundColor: '#ffcdd2' }
-                      }}
-                    >
-                      <RemoveIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                  
-                  {getCartItemQuantity(item.id) > 0 && (
-                    <Typography variant="h6" sx={{ minWidth: 30, textAlign: 'center', fontWeight: 600, color: '#d32f2f' }}>
-                      {getCartItemQuantity(item.id)}
-                    </Typography>
-                  )}
-                  
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<AddIcon />}
-                    onClick={() => addToCart(item)}
-                    fullWidth
-                    disabled={!item.is_available}
-                    sx={{ 
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      backgroundColor: '#d32f2f',
-                      '&:hover': {
-                        backgroundColor: '#b71c1c',
-                      },
-                      '&:disabled': {
-                        backgroundColor: '#ccc',
-                        color: '#666',
-                      }
-                    }}
-                  >
-                    {getCartItemQuantity(item.id) > 0 ? 'Add More' : 'Add to Cart'}
-                  </Button>
-                </Box>
+                {/* Add to Cart Button */}
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<AddIcon />}
+                  onClick={() => addToCart(item)}
+                  disabled={!item.is_available}
+                  sx={{ 
+                    borderRadius: 1,
+                    fontWeight: 600,
+                    backgroundColor: '#d32f2f',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#b71c1c',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#374151',
+                      color: '#6b7280',
+                    }
+                  }}
+                >
+                  ADD TO CART
+                </Button>
               </CardContent>
             </Card>
           ))}
@@ -653,26 +538,30 @@ const Menu: React.FC = () => {
         open={cartDrawerOpen}
         onClose={() => setCartDrawerOpen(false)}
         PaperProps={{
-          sx: { width: { xs: '100%', sm: 400 } }
+          sx: { 
+            width: { xs: '100%', sm: 400 },
+            backgroundColor: '#1f2937',
+            color: '#e5e7eb'
+          }
         }}
       >
         <Box sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#e5e7eb' }}>
               Your Cart ({getTotalItems()} items)
             </Typography>
-            <IconButton onClick={() => setCartDrawerOpen(false)}>
+            <IconButton onClick={() => setCartDrawerOpen(false)} sx={{ color: '#e5e7eb' }}>
               <CloseIcon />
             </IconButton>
           </Box>
 
           {Object.keys(cart).length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
-              <CartIcon sx={{ fontSize: 60, color: 'grey.400', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary">
+              <CartIcon sx={{ fontSize: 60, color: '#6b7280', mb: 2 }} />
+              <Typography variant="h6" sx={{ color: '#9ca3af' }}>
                 Your cart is empty
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: '#6b7280' }}>
                 Add some delicious items to get started
               </Typography>
             </Box>
@@ -684,21 +573,27 @@ const Menu: React.FC = () => {
                     <ListItemText
                       primary={item.name}
                       secondary={`₹${item.price} each`}
+                      sx={{
+                        '& .MuiListItemText-primary': { color: '#e5e7eb' },
+                        '& .MuiListItemText-secondary': { color: '#9ca3af' }
+                      }}
                     />
                     <ListItemSecondaryAction>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton
                           size="small"
                           onClick={() => removeFromCart(parseInt(itemId))}
+                          sx={{ color: '#e5e7eb' }}
                         >
                           <RemoveIcon />
                         </IconButton>
-                        <Typography variant="h6" sx={{ minWidth: 30, textAlign: 'center' }}>
+                        <Typography variant="h6" sx={{ minWidth: 30, textAlign: 'center', color: '#e5e7eb' }}>
                           {item.quantity}
                         </Typography>
                         <IconButton
                           size="small"
                           onClick={() => addToCart({ id: parseInt(itemId), name: item.name, price: item.price } as MenuItem)}
+                          sx={{ color: '#e5e7eb' }}
                         >
                           <AddIcon />
                         </IconButton>
@@ -708,10 +603,10 @@ const Menu: React.FC = () => {
                 ))}
               </List>
 
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2, borderColor: '#374151' }} />
 
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#e5e7eb' }}>
                   Total: ₹{getTotalPrice().toFixed(2)}
                 </Typography>
               </Box>

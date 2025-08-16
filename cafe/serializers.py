@@ -53,11 +53,17 @@ class UserSerializer(serializers.ModelSerializer):
 class TableSerializer(serializers.ModelSerializer):
     qr_code_url = serializers.SerializerMethodField()
     floor_name = serializers.CharField(source='floor.name', read_only=True)
+    room_name = serializers.CharField(source='room.room_name', read_only=True)
     has_active_order = serializers.SerializerMethodField()
     
     class Meta:
         model = Table
-        fields = ['id', 'table_number', 'table_name', 'capacity', 'is_active', 'qr_code', 'qr_code_url', 'qr_unique_id', 'created_at', 'visual_x', 'visual_y', 'floor', 'floor_name', 'has_active_order']
+        fields = [
+            'id', 'table_number', 'table_name', 'capacity', 'is_active', 
+            'qr_code', 'qr_code_url', 'qr_unique_id', 'created_at', 
+            'visual_x', 'visual_y', 'floor', 'floor_name', 'room', 'room_name',
+            'shape', 'width', 'height', 'radius', 'has_active_order'
+        ]
         read_only_fields = ['id', 'qr_code', 'qr_code_url', 'qr_unique_id', 'created_at']
     
     def get_qr_code_url(self, obj):

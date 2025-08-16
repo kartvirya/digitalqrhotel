@@ -249,8 +249,8 @@ const Navbar: React.FC = () => {
       PaperProps={{
         sx: {
           width: 280,
-          backgroundColor: '#d32f2f',
-          color: 'white',
+          backgroundColor: '#0f1217',
+          color: '#e5e7eb',
         }
       }}
     >
@@ -394,8 +394,8 @@ const Navbar: React.FC = () => {
     <AppBar 
       position="static" 
       sx={{ 
-        backgroundColor: '#d32f2f',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        backgroundColor: '#0f1217',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
       }}
     >
       <Container maxWidth="xl">
