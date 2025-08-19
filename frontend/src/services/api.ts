@@ -20,18 +20,26 @@ import {
 
 // Dynamic backend URL detection
 const getBackendUrl = () => {
+  // Use environment variable if available
+  if (process.env.REACT_APP_BACKEND_URL) {
+    return process.env.REACT_APP_BACKEND_URL;
+  }
+  
   // If we're in development, use the same host as the frontend
   if (process.env.NODE_ENV === 'development') {
     const host = window.location.hostname;
-    return `http://${host}:8002`;
+    const port = process.env.REACT_APP_BACKEND_PORT || '8000';
+    return `http://${host}:${port}`;
   }
-  // For production, you can set a specific backend URL
-  return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8002';
+  
+  // For production, default to localhost
+  return 'http://localhost:8000';
 };
 
 // Configure axios
 axios.defaults.baseURL = getBackendUrl();
 axios.defaults.withCredentials = true;
+axios.defaults.timeout = parseInt(process.env.REACT_APP_API_TIMEOUT || '30000');
 
 // API service class
 class ApiService {

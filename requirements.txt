@@ -1,0 +1,14 @@
+Django>=4.1.2
+djangorestframework>=3.14.0
+django-cors-headers>=4.0.0
+python-dotenv>=1.0.0
+Pillow>=9.0.0
+qrcode>=7.3.1
+requests>=2.28.0
+
+# Production dependencies (optional)
+# psycopg2-binary>=2.9.0  # For PostgreSQL
+# mysqlclient>=2.1.0      # For MySQL
+# django-redis>=5.2.0     # For Redis cache
+# gunicorn>=20.1.0        # For production server
+# whitenoise>=6.2.0       # For static files in production
